@@ -1,0 +1,16 @@
+Use as primary key two or more attributes.
+Primitive classes
+Create a static class for insert, update and delete.
+Use RSS to lead the data as shows.
+Create the UI. AS GMAIL.
+// Save news -> Title, description, source, author, publish date, publisher, url
+// creation date (created in the db), update date, language field
+// Events -> (same as with news), event datetime, event location 
+// Cover image for both or default. (save image path)
+
+// See the news, search between news
+// Use RSS or Use http200 http401
+// REST API
+
+// Have a refresh, use async loading screen.
+// Have a clear db button
