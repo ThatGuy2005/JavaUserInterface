@@ -23,6 +23,7 @@ public class SQLiteCommunicator {
     }
     
     // Get all the news with a given title and date (this is the primery key)
+    // How can I connect it with RSS?
     public ArrayList<News> getNewsWithTitleAndDate(String title, Instant publishTime) {
         String query = "SELECT * FROM News WHERE title=? AND date=?";
         
@@ -76,6 +77,23 @@ public class SQLiteCommunicator {
             stmt.setString(2, title);
             // Use long in the database
             stmt.setLong(3, publishTime.getEpochSecond());
+            stmt.executeQuery();
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+        }
+    }
+    
+    public void deleteEntry(
+            String table,
+            String title, Instant publishTime) {
+        
+        String query = "DELETE FROM " + table
+                + " WHERE title = ? AND date = ?";
+        
+        try (PreparedStatement stmt = con.prepareStatement(query)) {
+            stmt.setString(1, title);
+            // Use long in the database
+            stmt.setLong(2, publishTime.getEpochSecond());
             stmt.executeQuery();
         } catch (SQLException e) {
             System.err.println(e.getMessage());
