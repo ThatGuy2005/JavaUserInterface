@@ -4,6 +4,10 @@ package com.mycompany.javauserinterface;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -53,7 +57,7 @@ public class RSSCommunicator {
             connection.setConnectTimeout(5000);
             connection.setReadTimeout(5000);
 
-            int statusCode =connection.getResponseCode();
+            int statusCode = connection.getResponseCode();
 
             connection.disconnect();
 
@@ -86,60 +90,70 @@ public class RSSCommunicator {
             NodeList items = document.getElementsByTagName("item");
 
             for (int i = 0;i < items.getLength();i++) {
-
                 Element item = (Element)items.item(i);
-
+                
+                // Ask if this is OKAY. Personally I don't think so.
                 String title = getText(item, "title");
-
                 String link = getText(item, "link");
-
-                String publishTime = getText(item, "pubDate");
-
+                String author = getText(item, "author");
+                String publisher = getText(item, "publisher");
+                String description = getText(item, "description");
+                String language = getText(item, "language");
+                String source = getText(item, "source");
+                
+                // Ask how to process the dates
+                Instant publishTime = Instant.ofEpochSecond(Long.parseLong
+                    (getText(item, "publishTime")));
+                Instant creationDate = Instant.ofEpochSecond(Long.parseLong
+                    (getText(item, "creationDate")));
+                Instant updateDate = Instant.ofEpochSecond(Long.parseLong
+                    (getText(item, "updateDate")));
+                
                 // Create News object
-                //News news =
-                //        new News(
-                //                title,
-                //                link,
-                //                publishTime
-                //        );
+                News news =
+                        new News(
+                                title,
+                                author,
+                                publisher,
+                                description,
+                                publishTime,
+                                source,
+                                link,
+                                creationDate,
+                                updateDate,
+                                language
+                        );
 
                 // Add object to ArrayList
-                // newsList.add(news);
+                 newsList.add(news);
             }
-
-
             input.close();
-
         } catch (Exception e) {
-
-            System.out.println(
-                    "RSS parsing error: "
-                    + e.getMessage()
-            );
+            System.out.println("RSS parsing error: " + e.getMessage());
         }
 
         return newsList;
     }
 
-
     // Read text from an XML tag
-    public static String getText(
-            Element element,
-            String tagName) {
-
-        NodeList nodes =
-                element
-                        .getElementsByTagName(
-                                tagName
-                        );
-
+    public static String getText(Element element, String tagName) {
+        NodeList nodes = element.getElementsByTagName(tagName);
+        
         if (nodes.getLength() > 0) {
-
-            return nodes
-                    .item(0)
-                    .getTextContent();
+            return nodes.item(0).getTextContent();
         }
-
         return "";
+    }
+    
+    public static Instant parseDateString(String date) {
+        if(date == null || date.isEmpty()) {
+            return null;
+        }
+        try {
+            return ZonedDateTime.parse(date, DateTimeFormatter.BASIC_ISO_DATE).toInstant();
+        } catch (DateTimeParseException e) {
+            System.out.println("Could not parse date!");
+            return null;
+        }
     }
 }
