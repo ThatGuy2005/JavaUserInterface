@@ -52,6 +52,8 @@ public class SQLiteCommunicator {
             return null;
         }
     }
+    
+    
     private SQLiteCommunicator instance; 
     private Connection con;
     private static boolean built = false;
