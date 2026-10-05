@@ -102,12 +102,12 @@ public class RSSCommunicator {
                 String source = getText(item, "source");
                 
                 // Ask how to process the dates
-                Instant publishTime = Instant.ofEpochSecond(Long.parseLong
-                    (getText(item, "publishTime")));
-                Instant creationDate = Instant.ofEpochSecond(Long.parseLong
-                    (getText(item, "creationDate")));
-                Instant updateDate = Instant.ofEpochSecond(Long.parseLong
-                    (getText(item, "updateDate")));
+                Instant publishTime = parseDateString
+                    ((getText(item, "publishTime")));
+                Instant creationDate = parseDateString
+                    ((getText(item, "creationDate")));
+                Instant updateDate = parseDateString
+                    ((getText(item, "updateDate")));
                 
                 // Create News object
                 News news =
