@@ -1,6 +1,7 @@
 
 package com.mycompany.javauserinterface;
 
+import java.lang.ProcessBuilder.Redirect.Type;
 import java.sql.*;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -53,6 +54,33 @@ public class SQLiteCommunicator {
         }
     }
     
+    // I chose that the title and publication date will serve as
+    // a primery key in both News and Events tables.
+    // Use a trigger to update the updateTime in the database.
+    public void updateAttributeIn(String attributeName,
+            String table, Object value,
+            String title, Instant publishTime) {
+        
+        String query = "UPDATE " + table + " SET " + attributeName + " = ?"
+                + " WHERE title = ? AND date = ?";
+        
+        try (PreparedStatement stmt = con.prepareStatement(query)) {
+            if(value instanceof String) {
+                stmt.setString(1,(String) value);
+            } else if (value instanceof Long) {
+                stmt.setLong(1,(Long) value);
+            } else {
+                System.out.println("Invalid type chosen, update cancelled!");
+                return;
+            }
+            stmt.setString(2, title);
+            // Use long in the database
+            stmt.setLong(3, publishTime.getEpochSecond());
+            stmt.executeQuery();
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+        }
+    }
     
     private SQLiteCommunicator instance; 
     private Connection con;
