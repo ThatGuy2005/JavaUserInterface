@@ -121,7 +121,8 @@ public class RSSCommunicator {
                                 link,
                                 creationDate,
                                 updateDate,
-                                language
+                                language,
+                                null
                         );
 
                 // Add object to ArrayList

@@ -39,6 +39,7 @@ public class SQLiteCommunicator {
                 String description = res.getString("description");
                 String source = res.getString("source");
                 String url = res.getString("url");
+                String imagePath = res.getString("imagePath");
                 Instant creationDate = 
                         Instant.ofEpochSecond(res.getInt("creationDate"));
                 Instant updateDate = 
@@ -46,7 +47,7 @@ public class SQLiteCommunicator {
                 String language = res.getString("language");
                 news.add(new News(title, author, publisher,
                         description, publishTime, source, url, creationDate,
-                        updateDate,language));
+                        updateDate, language, imagePath));
             }
             return news;
         } catch (SQLException e) {
