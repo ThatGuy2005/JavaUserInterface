@@ -35,6 +35,27 @@ public class News {
     public String getPublisher() {
         return this.publisher;
     }
+    public Long getPublishTime() {
+        return this.publishTime.getEpochSecond();
+    }
+    public Long getCreationDate() {
+        return this.creationDate.getEpochSecond();
+    }
+    public Long getUpdateDate() {
+        return this.updateDate.getEpochSecond();
+    }
+    public String getSource() {
+        return this.source;
+    }
+    public String getUrl() {
+        return this.url;
+    }
+    public String getLanguage() {
+        return this.language;
+    }
+    public String getImagePath() {
+        return this.imagePath;
+    }
     private String title;
     private String author;
     private String publisher;

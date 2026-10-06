@@ -104,16 +104,16 @@ public class SQLiteCommunicator {
         try (PreparedStatement pstmt = con.prepareStatement(query)) {
             pstmt.setString(1, news.getTitle());
             pstmt.setString(2, news.getAuthor());
-            pstmt.setString(3, this.getPublisher());
-            pstmt.setString(4, this.description);
+            pstmt.setString(3, news.getPublisher());
+            pstmt.setString(4, news.getDescription());
             // Assuming dates/times are stored as strings or longs in SQLite
-            pstmt.setLong(5, this.publishTime); 
-            pstmt.setString(6, this.source);
-            pstmt.setString(7, this.url);
-            pstmt.setLong(8, this.creationDate);
-            pstmt.setLong(9, this.updateDate);
-            pstmt.setString(10, this.language);
-            pstmt.setString(11, this.imagePath);
+            pstmt.setLong(5, news.getPublishTime()); 
+            pstmt.setString(6, news.getSource());
+            pstmt.setString(7, news.getUrl());
+            pstmt.setLong(8, news.getCreationDate());
+            pstmt.setLong(9, news.getUpdateDate());
+            pstmt.setString(10, news.getLanguage());
+            pstmt.setString(11, news.getImagePath());
     
             pstmt.executeUpdate();
         } catch (SQLException e) {
