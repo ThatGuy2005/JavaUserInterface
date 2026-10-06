@@ -1,10 +1,8 @@
-
 package com.main.javauserinterface;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.util.Arrays;
-import java.time.Instant;
 import java.util.ArrayList;
 import javax.swing.*;
 
@@ -76,10 +74,13 @@ public class MainPanel extends JPanel {
         this.upperPanel.add(new JTextField(50));
         
         // 1. Create a reading area (JTextArea or JTextPane)
-        this.readingArea = new JTextArea("Select a news article...");
-        this.readingArea.setLineWrap(true);
-        this.readingArea.setWrapStyleWord(true);
-        this.readingArea.setEditable(false); // Make it read-only
+        this.readingArea = new JEditorPane();
+        this.readingArea.setContentType("text/html");
+        this.readingArea.setEditable(false);
+
+        // Note: Remove setLineWrap(true) and setWrapStyleWord(true). 
+        // JEditorPane wraps HTML automatically based on the window size.
+        this.readingArea.setText("<html><body><i>Select a news article...</i></body></html>");
         
         // 2. Wrap both panels in ScrollPanes so they scroll independently
         JScrollPane leftScroll = new JScrollPane(this.leftPanel);
@@ -141,7 +142,7 @@ public class MainPanel extends JPanel {
     
     // New class variables
     private JSplitPane splitPane;
-    private JTextArea readingArea;
+    private JEditorPane readingArea;
     
     private final ArrayList<String> urls = new ArrayList<>(Arrays.asList(
             "https://stiri.infomures.ro/feed/"));
