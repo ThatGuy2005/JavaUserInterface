@@ -10,14 +10,17 @@ import javax.swing.*;
 // you can store both news and event or maybe an
 // interface is better for creating the custom widgets 
 // Add JScrollPanel and JSplitPanel
+// TODO REFACTOR THIS STUFF!!!!!!
 public class MainPanel extends JPanel {
     public MainPanel() throws Exception{
         ArrayList<News> temporalNews;
+        // Check for internet
         if(!RSSCommunicator.hasInternet())
         {
             throw new Exception("No internet!");
         }
         this.news = new ArrayList<>();
+        // For now go throught the given urls
         for (String url : urls) {
             int statusCode = RSSCommunicator.getStatusCode(url);
             if( statusCode !=
@@ -30,6 +33,8 @@ public class MainPanel extends JPanel {
             // The next step is to insert the news into the database
             for(News tNews : temporalNews) {
                 JButton newsButton = new JButton(tNews.getTitle());
+                // Add a action listener to display the description on
+                // the reading area
                 newsButton.addActionListener(e -> {
                     readingArea.setText(tNews.getDescription()); 
                     readingArea.setCaretPosition(0);
@@ -38,14 +43,15 @@ public class MainPanel extends JPanel {
             }
             // After this invoke the getAllNews() to also cache them
         }
+        
+        // Initialize the components
         this.mainLayout = new BorderLayout();
         this.upperLayout = new FlowLayout();
         this.leftPanel = new JPanel();
         this.leftLayout = new BoxLayout(this.leftPanel,BoxLayout.PAGE_AXIS);
         
         this.leftPanel.setLayout(this.leftLayout);
-        
-        
+       
         this.setLayout(this.mainLayout);
         
         for(JButton newsWidget : news) {
@@ -131,16 +137,12 @@ public class MainPanel extends JPanel {
                 JOptionPane.ERROR_MESSAGE);
         }
     }
-    
-    // Class variables
     private BorderLayout mainLayout;
     private JPanel leftPanel;
     private BoxLayout leftLayout;
     private JPanel upperPanel;
     private FlowLayout upperLayout;
     private ArrayList<JButton> news;
-    
-    // New class variables
     private JSplitPane splitPane;
     private JEditorPane readingArea;
     
