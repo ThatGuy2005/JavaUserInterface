@@ -23,6 +23,9 @@ public class News {
         this.language = language;
         this.imagePath = imagePath;
     }
+    public String getDescription() {
+        return this.description;
+    }
     public String getTitle() {
         return this.title;
     }

@@ -28,8 +28,14 @@ public class MainPanel extends JPanel {
                         + statusCode);
             }
             temporalNews = RSSCommunicator.parseRSS(url);
+            // Create the buttons based on the news
             for(News tNews : temporalNews) {
-                news.add(new JButton(tNews.getTitle()));
+                JButton newsButton = new JButton(tNews.getTitle());
+                newsButton.addActionListener(e -> {
+                    readingArea.setText(tNews.getDescription()); 
+                    readingArea.setCaretPosition(0);
+                });
+                news.add(newsButton);
             }
         }
         this.mainLayout = new BorderLayout();
@@ -54,7 +60,7 @@ public class MainPanel extends JPanel {
         this.add(this.upperPanel, BorderLayout.NORTH);
         this.add(this.leftPanel, BorderLayout.WEST);
         
-    this.setLayout(this.mainLayout);
+        this.setLayout(this.mainLayout);
         
         for(JButton newsWidget : news) {
             this.leftPanel.add(newsWidget);
@@ -62,7 +68,9 @@ public class MainPanel extends JPanel {
         
         this.upperPanel = new JPanel();
         this.upperPanel.setLayout(this.upperLayout);
-        this.upperPanel.add(new JButton("Refresh")); 
+        JButton refreshButton = new JButton("Refresh");
+        refreshButton.addActionListener(e -> refreshCallback());
+        this.upperPanel.add(refreshButton); 
         this.upperPanel.add(new JTextField(50));
         
         // 1. Create a reading area (JTextArea or JTextPane)
@@ -83,6 +91,42 @@ public class MainPanel extends JPanel {
         
         // 4. Add the split pane to the CENTER instead of WEST so it fills the screen
         this.add(this.splitPane, BorderLayout.CENTER);
+    }
+    
+    private void refreshCallback() {
+        try {
+            if (!RSSCommunicator.hasInternet()) {
+                throw new Exception("No internet!");
+            }
+        
+            this.news.clear(); // Clear the underlying array
+            this.leftPanel.removeAll(); // Clear the old buttons from the screen
+        
+            for (String url : urls) {
+                int statusCode = RSSCommunicator.getStatusCode(url);
+                if (statusCode != RSSCommunicator.ACCEPT_REQUEST_CODE) {
+                    throw new Exception("Error code passed from server " + statusCode);
+                }
+            
+                ArrayList<News> temporalNews = RSSCommunicator.parseRSS(url);
+                for (News tNews : temporalNews) {
+                    JButton newsWidget = new JButton(tNews.getTitle());
+                    this.news.add(newsWidget);
+                    this.leftPanel.add(newsWidget); // Add the new button to the panel
+                }
+            }
+        
+            // Force Swing to recalculate the layout and redraw the screen
+            this.leftPanel.revalidate();
+            this.leftPanel.repaint();
+        
+        } catch (Exception ex) {
+            // Pop up an error box so the user knows the refresh failed
+            JOptionPane.showMessageDialog(this, 
+                "Could not refresh news: " + ex.getMessage(), 
+                "Network Error", 
+                JOptionPane.ERROR_MESSAGE);
+        }
     }
     
     // Class variables
