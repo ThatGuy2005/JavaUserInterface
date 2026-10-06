@@ -1,6 +1,7 @@
 
 package com.main.javauserinterface;
 
+import java.io.File;
 import java.lang.ProcessBuilder.Redirect.Type;
 import java.sql.*;
 import java.time.Instant;
@@ -21,10 +22,18 @@ public class SQLiteCommunicator {
             return this.instance;
         }
     }
+    public boolean isDatabase(String dbFilePath) {
+        File dbFile = new File(dbFilePath);
+        return dbFile.exists() && !dbFile.isDirectory();
+    }
+    public void createDatabase() {
+        
+    }
     
     // Get all the news with a given title and date (this is the primery key)
     // How can I connect it with RSS?
-    public ArrayList<News> getNewsWithTitleAndDate(String title, Instant publishTime) {
+    public ArrayList<News> getNewsWithTitleAndDate (String title,
+            Instant publishTime) {
         String query = "SELECT * FROM News WHERE title=? AND date=?";
         
         try (PreparedStatement stmt = con.prepareStatement(query)) {
