@@ -29,7 +29,38 @@ public class SQLiteCommunicator {
     public void createDatabase() {
         
     }
-    
+    public ArrayList<News> getAllNews() {
+        String query = "SELECT * FROM News";
+        
+        try (PreparedStatement stmt = con.prepareStatement(query)) {
+            ResultSet res = stmt.executeQuery();
+            ArrayList<News> news = new ArrayList<News>();
+            while(res.next()) {
+                String title = res.getString("title");
+                
+                String publisher = res.getString("publisher");
+                String author = res.getString("author");
+                String description = res.getString("description");
+                String source = res.getString("source");
+                String url = res.getString("url");
+                String imagePath = res.getString("imagePath");
+                Instant creationDate = 
+                        Instant.ofEpochSecond(res.getInt("creationDate"));
+                Instant publishTime = 
+                        Instant.ofEpochSecond(res.getInt("publishTime"));
+                Instant updateDate = 
+                        Instant.ofEpochSecond(res.getInt("updateDate"));
+                String language = res.getString("language");
+                news.add(new News(title, author, publisher,
+                        description, publishTime, source, url, creationDate,
+                        updateDate, language, imagePath));
+            }
+            return news;
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            return null;
+        }
+    }
     // Get all the news with a given title and date (this is the primery key)
     // How can I connect it with RSS?
     public ArrayList<News> getNewsWithTitleAndDate (String title,

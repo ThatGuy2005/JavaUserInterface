@@ -29,6 +29,7 @@ public class MainPanel extends JPanel {
             }
             temporalNews = RSSCommunicator.parseRSS(url);
             // Create the buttons based on the news
+            // The next step is to insert the news into the database
             for(News tNews : temporalNews) {
                 JButton newsButton = new JButton(tNews.getTitle());
                 newsButton.addActionListener(e -> {
@@ -37,6 +38,7 @@ public class MainPanel extends JPanel {
                 });
                 news.add(newsButton);
             }
+            // After this invoke the getAllNews() to also cache them
         }
         this.mainLayout = new BorderLayout();
         this.upperLayout = new FlowLayout();
