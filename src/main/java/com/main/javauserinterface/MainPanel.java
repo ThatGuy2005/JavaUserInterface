@@ -1,5 +1,6 @@
 package com.main.javauserinterface;
 
+import RSS.RSSCommunicator;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.util.Arrays;

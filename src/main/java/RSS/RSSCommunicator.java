@@ -1,6 +1,7 @@
 
-package com.main.javauserinterface;
+package RSS;
 
+import com.main.javauserinterface.News;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;

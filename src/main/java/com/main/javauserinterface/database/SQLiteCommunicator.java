@@ -1,6 +1,7 @@
 
-package com.main.javauserinterface;
+package com.main.javauserinterface.database;
 
+import com.main.javauserinterface.News;
 import java.io.File;
 import java.lang.ProcessBuilder.Redirect.Type;
 import java.sql.*;
@@ -93,6 +94,30 @@ public class SQLiteCommunicator {
         } catch (SQLException e) {
             System.err.println(e.getMessage());
             return null;
+        }
+    }
+    
+    public void insertInstanceInNews(News news) {
+        String query = "INSERT INTO News (title, author, publisher, description, "
+             + "publishTime, source, url, creationDate, updateDate, language, imagePath) "
+             + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement pstmt = con.prepareStatement(query)) {
+            pstmt.setString(1, news.getTitle());
+            pstmt.setString(2, news.getAuthor());
+            pstmt.setString(3, this.getPublisher());
+            pstmt.setString(4, this.description);
+            // Assuming dates/times are stored as strings or longs in SQLite
+            pstmt.setLong(5, this.publishTime); 
+            pstmt.setString(6, this.source);
+            pstmt.setString(7, this.url);
+            pstmt.setLong(8, this.creationDate);
+            pstmt.setLong(9, this.updateDate);
+            pstmt.setString(10, this.language);
+            pstmt.setString(11, this.imagePath);
+    
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            
         }
     }
     
