@@ -53,13 +53,50 @@ public class MainPanel extends JPanel {
         
         this.add(this.upperPanel, BorderLayout.NORTH);
         this.add(this.leftPanel, BorderLayout.WEST);
+        
+    this.setLayout(this.mainLayout);
+        
+        for(JButton newsWidget : news) {
+            this.leftPanel.add(newsWidget);
+        }
+        
+        this.upperPanel = new JPanel();
+        this.upperPanel.setLayout(this.upperLayout);
+        this.upperPanel.add(new JButton("Refresh")); 
+        this.upperPanel.add(new JTextField(50));
+        
+        // 1. Create a reading area (JTextArea or JTextPane)
+        this.readingArea = new JTextArea("Select a news article...");
+        this.readingArea.setLineWrap(true);
+        this.readingArea.setWrapStyleWord(true);
+        this.readingArea.setEditable(false); // Make it read-only
+        
+        // 2. Wrap both panels in ScrollPanes so they scroll independently
+        JScrollPane leftScroll = new JScrollPane(this.leftPanel);
+        JScrollPane rightScroll = new JScrollPane(this.readingArea);
+        
+        // 3. Create the SplitPane and set the 1/3 ratio
+        this.splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftScroll, rightScroll);
+        this.splitPane.setResizeWeight(0.33); // Allocates 33% of space to the left component
+        
+        this.add(this.upperPanel, BorderLayout.NORTH);
+        
+        // 4. Add the split pane to the CENTER instead of WEST so it fills the screen
+        this.add(this.splitPane, BorderLayout.CENTER);
     }
+    
+    // Class variables
     private BorderLayout mainLayout;
     private JPanel leftPanel;
     private BoxLayout leftLayout;
     private JPanel upperPanel;
     private FlowLayout upperLayout;
     private ArrayList<JButton> news;
+    
+    // New class variables
+    private JSplitPane splitPane;
+    private JTextArea readingArea;
+    
     private final ArrayList<String> urls = new ArrayList<>(Arrays.asList(
             "https://stiri.infomures.ro/feed/"));
 }
