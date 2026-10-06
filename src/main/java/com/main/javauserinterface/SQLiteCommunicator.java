@@ -1,5 +1,5 @@
 
-package com.mycompany.javauserinterface;
+package com.main.javauserinterface;
 
 import java.lang.ProcessBuilder.Redirect.Type;
 import java.sql.*;

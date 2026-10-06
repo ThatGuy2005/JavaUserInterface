@@ -1,5 +1,5 @@
 
-package com.mycompany.javauserinterface;
+package com.main.javauserinterface;
 
 import java.time.Instant;
 
@@ -22,6 +22,15 @@ public class News {
         this.updateDate = updateDate;
         this.language = language;
         this.imagePath = imagePath;
+    }
+    public String getTitle() {
+        return this.title;
+    }
+    public String getAuthor() {
+        return this.author;
+    }
+    public String getPublisher() {
+        return this.publisher;
     }
     private String title;
     private String author;

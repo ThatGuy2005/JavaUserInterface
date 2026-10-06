@@ -1,5 +1,5 @@
 
-package com.mycompany.javauserinterface;
+package com.main.javauserinterface;
 
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -27,6 +27,7 @@ public class RSSCommunicator {
                     (HttpURLConnection)
                             url.openConnection();
             
+            // Vodoo constant, what does it mean? Why 3000?
             connection.setConnectTimeout(3000);
             connection.setReadTimeout(3000);
 
@@ -53,7 +54,8 @@ public class RSSCommunicator {
                     url.openConnection();
 
             connection.setRequestMethod("GET");
-
+               
+            // Vodoo constant, what does it mean? Why 5000?
             connection.setConnectTimeout(5000);
             connection.setReadTimeout(5000);
 
@@ -93,6 +95,7 @@ public class RSSCommunicator {
                 Element item = (Element)items.item(i);
                 
                 // Ask if this is OKAY. Personally I don't think so.
+                // Also add checks for empty strings
                 String title = getText(item, "title");
                 String link = getText(item, "link");
                 String author = getText(item, "author");
@@ -103,7 +106,7 @@ public class RSSCommunicator {
                 
                 // Ask how to process the dates
                 Instant publishTime = parseDateString
-                    ((getText(item, "publishTime")));
+                    ((getText(item, "pubDate")));
                 Instant creationDate = parseDateString
                     ((getText(item, "creationDate")));
                 Instant updateDate = parseDateString
@@ -136,13 +139,16 @@ public class RSSCommunicator {
         return newsList;
     }
 
+    // This may need explanation
     // Read text from an XML tag
     public static String getText(Element element, String tagName) {
         NodeList nodes = element.getElementsByTagName(tagName);
         
         if (nodes.getLength() > 0) {
+            // Why the first? What if there are more
             return nodes.item(0).getTextContent();
         }
+        // I should also check for empty Strings, but then why not return null?
         return "";
     }
     
@@ -151,10 +157,12 @@ public class RSSCommunicator {
             return null;
         }
         try {
-            return ZonedDateTime.parse(date, DateTimeFormatter.BASIC_ISO_DATE).toInstant();
+            return ZonedDateTime.parse(date, 
+                    DateTimeFormatter.RFC_1123_DATE_TIME).toInstant();
         } catch (DateTimeParseException e) {
             System.out.println("Could not parse date!");
             return null;
         }
     }
+    public static final int ACCEPT_REQUEST_CODE = 200;
 }

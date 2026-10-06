@@ -3,6 +3,11 @@ Primitive classes
 Create a static class for insert, update and delete.
 Use RSS to lead the data as shows.
 Create the UI. AS GMAIL.
+Search bar.
+Methods to add, update and delete news and events.
+GUI. Enable users to read more data about the news and events.
+SQLite database in backend.
+
 // Save news -> Title, description, source, author, publish date, publisher, url
 // creation date (created in the db), update date, language field
 // Events -> (same as with news), event datetime, event location 
@@ -11,6 +16,7 @@ Create the UI. AS GMAIL.
 // See the news, search between news
 // Use RSS or Use http200 http401
 // REST API
+// USE THE GIVEN EXAMPLE
 
 // Have a refresh, use async loading screen.
 // Have a clear db button
