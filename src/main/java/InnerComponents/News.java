@@ -35,14 +35,14 @@ public class News extends ComponentItem{
     public String getPublisher() {
         return this.publisher;
     }
-    public Long getPublishTime() {
-        return this.publishTime.getEpochSecond();
+    public Instant getPublishTime() {
+        return this.publishTime;
     }
-    public Long getCreationDate() {
-        return this.creationDate.getEpochSecond();
+    public Instant getCreationDate() {
+        return this.creationDate;
     }
-    public Long getUpdateDate() {
-        return this.updateDate.getEpochSecond();
+    public Instant getUpdateDate() {
+        return this.updateDate;
     }
     public String getSource() {
         return this.source;

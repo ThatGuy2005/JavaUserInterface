@@ -7,11 +7,23 @@ import RSS.RssCommunicator;
 import RSS.RssConnectionChecker;
 import RSS.RssReaderJson;
 import RSS.RssSource;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Types;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JButton;
+import Repositories.NewsRepository;
 
 public class NewsService implements Servicable {
+    public NewsService(NewsRepository repo) {
+        this.repository = repo;
+    }
     @Override
     public List<News> fetchAll(String path) {
         List<News> news = new ArrayList<News>();
@@ -39,4 +51,16 @@ public class NewsService implements Servicable {
         }
         return news;
     }
+    
+    public List<News> loadStored() throws SQLException {
+        return repository.findAllNews();
+    }
+    
+    public Integer refreshFromRss(String path) throws Exception {
+        List<News> fresh = fetchAll(path);    
+        repository.saveAll(fresh);
+        return fresh.size();
+    }
+    
+    private final NewsRepository repository;
 }

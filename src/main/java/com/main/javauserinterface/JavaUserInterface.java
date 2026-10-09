@@ -9,7 +9,7 @@ public class JavaUserInterface {
     public static void main(String[] args) {
         JFrame frame = new JFrame("NewsViewer");
         try {
-            MainPanel panel = new MainPanel();
+            MainPanel panel = new MainPanel("MyDatabase.db");
             panel.setBounds(0, 0, 800, 600);
             panel.setBackground(Color.red);
             frame.setBounds(0, 0, 800, 600);

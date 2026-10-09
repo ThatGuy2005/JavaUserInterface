@@ -46,7 +46,10 @@ public class NewsRSSParser implements ParsableRSS {
                 String author = getText(item, "author");
                 String publisher = getText(item, "publisher");
                 String description = getText(item, "description");
-                String language = getText(item, "language");
+                String language = getText(document.getDocumentElement(),
+                        "language");  // 
+                language = language.length() >= 2 ? 
+                        language.substring(0, 2).toLowerCase() : "ro";
                 String source = getText(item, "source");
                 
                 // Ask how to process the dates

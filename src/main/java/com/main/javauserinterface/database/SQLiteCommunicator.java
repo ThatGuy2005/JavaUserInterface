@@ -106,12 +106,11 @@ public class SQLiteCommunicator {
             pstmt.setString(2, news.getAuthor());
             pstmt.setString(3, news.getPublisher());
             pstmt.setString(4, news.getDescription());
-            // Assuming dates/times are stored as strings or longs in SQLite
-            pstmt.setLong(5, news.getPublishTime()); 
+            setInstant(pstmt,5,news.getPublishTime());
             pstmt.setString(6, news.getSource());
             pstmt.setString(7, news.getUrl());
-            pstmt.setLong(8, news.getCreationDate());
-            pstmt.setLong(9, news.getUpdateDate());
+            setInstant(pstmt,8,news.getCreationDate());
+            setInstant(pstmt,9,news.getUpdateDate());
             pstmt.setString(10, news.getLanguage());
             pstmt.setString(11, news.getImagePath());
     
@@ -164,6 +163,16 @@ public class SQLiteCommunicator {
         } catch (SQLException e) {
             System.err.println(e.getMessage());
         }
+    }
+    
+    private static void setInstant(PreparedStatement ps, int idx, Instant i) throws SQLException {
+        if (i == null) ps.setNull(idx, Types.INTEGER);
+        else ps.setLong(idx, i.getEpochSecond());
+    }
+
+    private static Instant getInstant(ResultSet rs, String col) throws SQLException {
+        long v = rs.getLong(col);
+        return rs.wasNull() ? null : Instant.ofEpochSecond(v);
     }
     
     private SQLiteCommunicator instance; 
