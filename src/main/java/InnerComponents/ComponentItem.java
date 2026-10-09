@@ -13,10 +13,8 @@ public class ComponentItem {
         if (language == null) {
             throw new IllegalArgumentException("The language can't be null.");
         }
-        if (language.length() != 2) {
-            throw new IllegalArgumentException("The language must"
-                    + " be 2 characters long, like EN.");
-        }
+        this.title = title;
+        this.language = language;
     }
     public String getTitle() {
         return this.title;

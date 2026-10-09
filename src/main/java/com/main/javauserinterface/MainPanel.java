@@ -5,154 +5,85 @@ import RSS.NewsRSSParser;
 import RSS.ParsableRSS;
 import RSS.RssCommunicator;
 import RSS.RssConnectionChecker;
+import Services.NewsService;
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.FlowLayout;
 import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.List;
 import javax.swing.*;
-
-// Note to self. Create an abstract class so that
-// you can store both news and event or maybe an
-// interface is better for creating the custom widgets 
-// Add JScrollPanel and JSplitPanel
-// TODO REFACTOR THIS STUFF!!!!!!
 
 public class MainPanel extends JPanel {
     public MainPanel() throws Exception{
-        ArrayList<News> temporalNews;
-        // Check for internet
-        if(!RssCommunicator.hasInternet())
-        {
-            throw new Exception("No internet!");
-        }
-        this.news = new ArrayList<>();
-        // For now go throught the given urls
-        for (String url : urls) {
-            int statusCode = RssCommunicator.getStatusCode(url);
-            if( statusCode !=
-                    RssConnectionChecker.ACCEPT_REQUEST_CODE) {
-                throw new Exception("Error code passed from server "
-                        + statusCode);
-            }
-            temporalNews = new NewsRSSParser().parseRSS(url);
-            // Create the buttons based on the news
-            // The next step is to insert the news into the database
-            for(News tNews : temporalNews) {
-                JButton newsButton = new JButton(tNews.getTitle());
-                // Add a action listener to display the description on
-                // the reading area
-                newsButton.addActionListener(e -> {
-                    readingArea.setText(tNews.getDescription()); 
-                    readingArea.setCaretPosition(0);
-                });
-                news.add(newsButton);
-            }
-            // After this invoke the getAllNews() to also cache them
-        }
+        this.news = new NewsService().fetchAll("RSS.json");
         
-        // Initialize the components
-        this.mainLayout = new BorderLayout();
-        this.upperLayout = new FlowLayout();
-        this.leftPanel = new JPanel();
-        this.leftLayout = new BoxLayout(this.leftPanel,BoxLayout.PAGE_AXIS);
-        
-        this.leftPanel.setLayout(this.leftLayout);
-       
-        this.setLayout(this.mainLayout);
-        
-        for(JButton newsWidget : news) {
-            this.leftPanel.add(newsWidget);
-        }
-        
-        this.upperPanel = new JPanel();
-        this.upperPanel.setLayout(this.upperLayout);
-        this.upperPanel.add(new JButton("Refreash"));
-        this.upperPanel.add(new JTextField(50));
-        
-        this.add(this.upperPanel, BorderLayout.NORTH);
-        this.add(this.leftPanel, BorderLayout.WEST);
-        
-        this.setLayout(this.mainLayout);
-        
-        for(JButton newsWidget : news) {
-            this.leftPanel.add(newsWidget);
-        }
-        
-        this.upperPanel = new JPanel();
-        this.upperPanel.setLayout(this.upperLayout);
+        setLayout(new BorderLayout());
+
+        // Left: list of news buttons
+        newsListPanel.setLayout(new BoxLayout(newsListPanel, BoxLayout.PAGE_AXIS));
+
+        // Right: reading area
+        readingArea.setContentType("text/html");
+        readingArea.setEditable(false);
+        readingArea.setText("<html><body><i>Select a news article...</i></body></html>");
+
+        // Top: toolbar
         JButton refreshButton = new JButton("Refresh");
         refreshButton.addActionListener(e -> refreshCallback());
-        this.upperPanel.add(refreshButton); 
-        this.upperPanel.add(new JTextField(50));
-        
-        // 1. Create a reading area (JTextArea or JTextPane)
-        this.readingArea = new JEditorPane();
-        this.readingArea.setContentType("text/html");
-        this.readingArea.setEditable(false);
+        JPanel upperPanel = new JPanel(new FlowLayout());
+        upperPanel.add(refreshButton);
+        upperPanel.add(new JTextField(50));
 
-        // Note: Remove setLineWrap(true) and setWrapStyleWord(true). 
-        // JEditorPane wraps HTML automatically based on the window size.
-        this.readingArea.setText("<html><body><i>Select a news article...</i></body></html>");
-        
-        // 2. Wrap both panels in ScrollPanes so they scroll independently
-        JScrollPane leftScroll = new JScrollPane(this.leftPanel);
-        JScrollPane rightScroll = new JScrollPane(this.readingArea);
-        
-        // 3. Create the SplitPane and set the 1/3 ratio
-        this.splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftScroll, rightScroll);
-        this.splitPane.setResizeWeight(0.33); // Allocates 33% of space to the left component
-        
-        this.add(this.upperPanel, BorderLayout.NORTH);
-        
-        // 4. Add the split pane to the CENTER instead of WEST so it fills the screen
-        this.add(this.splitPane, BorderLayout.CENTER);
+        // Split pane with independent scrolling
+        JSplitPane splitPane = new JSplitPane(
+                JSplitPane.HORIZONTAL_SPLIT,
+                new JScrollPane(newsListPanel),
+                new JScrollPane(readingArea));
+        splitPane.setResizeWeight(0.33);
+
+        add(upperPanel, BorderLayout.NORTH);
+        add(splitPane, BorderLayout.CENTER);
+
+        showNews(this.news);
     }
     
+    private void showNews(List<News> news) {
+        newsListPanel.removeAll();
+        for (News n : news) {
+            newsListPanel.add(new NewsWidget(n, this::showArticle));
+        }
+        newsListPanel.revalidate();
+        newsListPanel.repaint();
+    }
+
+    private void showArticle(News news) {
+        readingArea.setText(news.getDescription());
+        readingArea.setCaretPosition(0);
+    }
+    
+    private JButton createNewsButton(News news) {
+        JButton button = new JButton(news.getTitle());
+        button.setAlignmentX(Component.LEFT_ALIGNMENT);
+        button.addActionListener(e -> {
+            readingArea.setText(news.getDescription());
+            readingArea.setCaretPosition(0);
+        });
+        return button;
+    }
+
     private void refreshCallback() {
         try {
-            if (!RssCommunicator.hasInternet()) {
-                throw new Exception("No internet!");
-            }
-        
-            this.news.clear(); // Clear the underlying array
-            this.leftPanel.removeAll(); // Clear the old buttons from the screen
-        
-            for (String url : urls) {
-                int statusCode = RssCommunicator.getStatusCode(url);
-                if (statusCode != RssConnectionChecker.ACCEPT_REQUEST_CODE) {
-                    throw new Exception("Error code passed from server " + statusCode);
-                }
-            
-                ArrayList<News> temporalNews = RssCommunicator.parseRSS(url,
-                        new NewsRSSParser());
-                for (News tNews : temporalNews) {
-                    JButton newsWidget = new JButton(tNews.getTitle());
-                    this.news.add(newsWidget);
-                    this.leftPanel.add(newsWidget); // Add the new button to the panel
-                }
-            }
-        
-            // Force Swing to recalculate the layout and redraw the screen
-            this.leftPanel.revalidate();
-            this.leftPanel.repaint();
-        
+            showNews(newsService.fetchAll("RSS.json"));
         } catch (Exception ex) {
-            // Pop up an error box so the user knows the refresh failed
-            JOptionPane.showMessageDialog(this, 
-                "Could not refresh news: " + ex.getMessage(), 
-                "Network Error", 
-                JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                    "Could not refresh news: " + ex.getMessage(),
+                    "Network Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
-    private BorderLayout mainLayout;
-    private JPanel leftPanel;
-    private BoxLayout leftLayout;
-    private JPanel upperPanel;
-    private FlowLayout upperLayout;
-    private ArrayList<JButton> news;
-    private JSplitPane splitPane;
-    private JEditorPane readingArea;
-    
-    private final ArrayList<String> urls = new ArrayList<>(Arrays.asList(
-            "https://stiri.infomures.ro/feed/"));
+    private final NewsService newsService = new NewsService();
+    private final JPanel newsListPanel = new JPanel();
+    private final JEditorPane readingArea = new JEditorPane();
+    private List<News> news;
 }
