@@ -1,0 +1,63 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package RSS;
+
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+public final class RssConnectionChecker {
+    public static boolean hasInternet() {
+        try {
+            URL url = new URL("https://www.google.com");
+            
+            HttpURLConnection connection =
+                    (HttpURLConnection)
+                            url.openConnection();
+          
+            connection.setConnectTimeout(INTERNET_WAIT_CODE);
+            connection.setReadTimeout(INTERNET_WAIT_CODE);
+
+            connection.connect();
+
+            int statusCode = connection.getResponseCode();
+
+            connection.disconnect();
+
+            return statusCode == ACCEPT_REQUEST_CODE;
+
+        } catch (Exception e) {
+
+            return false;
+        }
+    }
+    
+    public static int getStatusCode(String urlAddress) {
+        try {
+
+            URL url = new URL(urlAddress);
+
+            HttpURLConnection connection = (HttpURLConnection)
+                    url.openConnection();
+
+            connection.setRequestMethod("GET");
+               
+            connection.setConnectTimeout(TIMEOUT_WAIT_CODE);
+            connection.setReadTimeout(TIMEOUT_WAIT_CODE);
+
+            int statusCode = connection.getResponseCode();
+
+            connection.disconnect();
+
+            return statusCode;
+
+        } catch (Exception e) {
+            System.out.println( "Connection error: "+ e.getMessage());
+            return -1;
+        }
+    }
+    public static final int ACCEPT_REQUEST_CODE = 200;
+    public static final int INTERNET_WAIT_CODE = 3000;
+    public static final int TIMEOUT_WAIT_CODE = 5000;
+}

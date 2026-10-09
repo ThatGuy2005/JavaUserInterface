@@ -1,7 +1,10 @@
 package com.main.javauserinterface;
 
 import InnerComponents.News;
-import RSS.RSSCommunicator;
+import RSS.NewsRSSParser;
+import RSS.ParsableRSS;
+import RSS.RssCommunicator;
+import RSS.RssConnectionChecker;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.util.Arrays;
@@ -13,24 +16,25 @@ import javax.swing.*;
 // interface is better for creating the custom widgets 
 // Add JScrollPanel and JSplitPanel
 // TODO REFACTOR THIS STUFF!!!!!!
+
 public class MainPanel extends JPanel {
     public MainPanel() throws Exception{
         ArrayList<News> temporalNews;
         // Check for internet
-        if(!RSSCommunicator.hasInternet())
+        if(!RssCommunicator.hasInternet())
         {
             throw new Exception("No internet!");
         }
         this.news = new ArrayList<>();
         // For now go throught the given urls
         for (String url : urls) {
-            int statusCode = RSSCommunicator.getStatusCode(url);
+            int statusCode = RssCommunicator.getStatusCode(url);
             if( statusCode !=
-                    RSSCommunicator.ACCEPT_REQUEST_CODE) {
+                    RssConnectionChecker.ACCEPT_REQUEST_CODE) {
                 throw new Exception("Error code passed from server "
                         + statusCode);
             }
-            temporalNews = RSSCommunicator.parseRSS(url);
+            temporalNews = new NewsRSSParser().parseRSS(url);
             // Create the buttons based on the news
             // The next step is to insert the news into the database
             for(News tNews : temporalNews) {
@@ -106,7 +110,7 @@ public class MainPanel extends JPanel {
     
     private void refreshCallback() {
         try {
-            if (!RSSCommunicator.hasInternet()) {
+            if (!RssCommunicator.hasInternet()) {
                 throw new Exception("No internet!");
             }
         
@@ -114,12 +118,13 @@ public class MainPanel extends JPanel {
             this.leftPanel.removeAll(); // Clear the old buttons from the screen
         
             for (String url : urls) {
-                int statusCode = RSSCommunicator.getStatusCode(url);
-                if (statusCode != RSSCommunicator.ACCEPT_REQUEST_CODE) {
+                int statusCode = RssCommunicator.getStatusCode(url);
+                if (statusCode != RssConnectionChecker.ACCEPT_REQUEST_CODE) {
                     throw new Exception("Error code passed from server " + statusCode);
                 }
             
-                ArrayList<News> temporalNews = RSSCommunicator.parseRSS(url);
+                ArrayList<News> temporalNews = RssCommunicator.parseRSS(url,
+                        new NewsRSSParser());
                 for (News tNews : temporalNews) {
                     JButton newsWidget = new JButton(tNews.getTitle());
                     this.news.add(newsWidget);
