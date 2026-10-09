@@ -1,17 +1,20 @@
 
-package com.main.javauserinterface;
+package InnerComponents;
 
 import java.time.Instant;
 
 // Note that we make a Instant of SECONDS!!!!!!
 // Forgot to add the image path, but that should not be read from the RSS,
 // but stored in the db.
-public class News {
+
+// Use composition.
+
+public class News extends ComponentItem{
     public News(String title, String author, String publisher,
             String description, Instant publishTime, String source, String url,
             Instant creationDate, Instant updateDate, String language,
             String imagePath) {
-        this.title = title;
+        super(title,language);
         this.author = author;
         this.publisher = publisher;
         this.description = description;
@@ -20,15 +23,12 @@ public class News {
         this.url = url;
         this.creationDate = creationDate;
         this.updateDate = updateDate;
-        this.language = language;
         this.imagePath = imagePath;
     }
     public String getDescription() {
         return this.description;
     }
-    public String getTitle() {
-        return this.title;
-    }
+    
     public String getAuthor() {
         return this.author;
     }
@@ -50,13 +50,10 @@ public class News {
     public String getUrl() {
         return this.url;
     }
-    public String getLanguage() {
-        return this.language;
-    }
+    
     public String getImagePath() {
         return this.imagePath;
     }
-    private String title;
     private String author;
     private String publisher;
     private String description;
@@ -65,6 +62,5 @@ public class News {
     private String url;
     private Instant creationDate;
     private Instant updateDate;
-    private String language;
     private String imagePath;
 }

@@ -1,6 +1,7 @@
 
 package com.main.javauserinterface;
 
+import InnerComponents.News;
 import java.awt.FlowLayout;
 import java.awt.event.MouseAdapter;
 import javax.swing.JButton;

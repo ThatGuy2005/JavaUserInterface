@@ -1,7 +1,7 @@
 
 package RSS;
 
-import com.main.javauserinterface.News;
+import InnerComponents.News;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;

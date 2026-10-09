@@ -1,7 +1,7 @@
 
 package com.main.javauserinterface.database;
 
-import com.main.javauserinterface.News;
+import InnerComponents.News;
 import java.io.File;
 import java.lang.ProcessBuilder.Redirect.Type;
 import java.sql.*;
