@@ -38,6 +38,7 @@ public class MainPanel extends JPanel {
         this.searchButton = new JButton("Search");
         searchButton.addActionListener(e -> searchCallback());
         this.searchInput = new JTextField(50);
+        searchInput.addActionListener(e -> searchCallback());
         
         JPanel upperPanel = new JPanel(new FlowLayout());
         upperPanel.add(this.refreshButton);
@@ -65,7 +66,6 @@ public class MainPanel extends JPanel {
         
         reloadFromDatabase();     // instant, local
         refresh();
-        
         
     }
     
