@@ -81,7 +81,8 @@ public class NewsRepository {
     }
 
     public List<News> findAllNews() throws SQLException {
-        String sql = "SELECT * FROM item WHERE type = 'NEWS' ORDER BY publish_time DESC";
+        String sql = "SELECT * FROM item WHERE type = "
+                + "'NEWS' ORDER BY publish_time DESC";
         List<News> result = new ArrayList<>();
         try (Connection c = DriverManager.getConnection(dbUrl);
              Statement st = c.createStatement();
@@ -102,6 +103,34 @@ public class NewsRepository {
             }
         }
         return result;
+    }
+    
+    public List<News> similarTitle(String title) {
+        String sql = "SELECT * FROM item WHERE title LIKE ?";
+        List<News> results = new ArrayList<News>();
+        try(Connection con = DriverManager.getConnection(dbUrl);) {
+            PreparedStatement stmt = con.prepareStatement(sql);
+            stmt.setString(1, "%" + title + "%");
+            ResultSet rs = stmt.executeQuery();
+            while(rs.next()) {
+                results.add(new News(
+                        rs.getString("title"),
+                        rs.getString("author"),
+                        rs.getString("publisher"),
+                        rs.getString("description"),
+                        getInstant(rs, "publish_time"),
+                        rs.getString("source"),
+                        rs.getString("url"),
+                        getInstant(rs, "creation_date"),
+                        getInstant(rs, "update_date"),
+                        rs.getString("language"),
+                        rs.getString("image_path")));
+            }
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            return results;
+        }
+        return results;
     }
 
     private static void setInstant(PreparedStatement ps, int idx, Instant i) throws SQLException {

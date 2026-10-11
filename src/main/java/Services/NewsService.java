@@ -56,6 +56,10 @@ public class NewsService implements Servicable {
         return repository.findAllNews();
     }
     
+    public List<News> searchSimilarTitle(String title) {
+        return repository.similarTitle(title);
+    }
+    
     public Integer refreshFromRss(String path) throws Exception {
         List<News> fresh = fetchAll(path);    
         repository.saveAll(fresh);

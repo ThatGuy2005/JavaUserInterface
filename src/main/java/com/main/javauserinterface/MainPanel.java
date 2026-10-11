@@ -35,9 +35,14 @@ public class MainPanel extends JPanel {
         // Top: toolbar
         this.refreshButton = new JButton("Refresh");
         refreshButton.addActionListener(e -> refreshCallback());
+        this.searchButton = new JButton("Search");
+        searchButton.addActionListener(e -> searchCallback());
+        this.searchInput = new JTextField(50);
+        
         JPanel upperPanel = new JPanel(new FlowLayout());
-        upperPanel.add(refreshButton);
-        upperPanel.add(new JTextField(50));
+        upperPanel.add(this.refreshButton);
+        upperPanel.add(this.searchButton);
+        upperPanel.add(this.searchInput);
 
         JSplitPane splitPane = new JSplitPane(
         JSplitPane.HORIZONTAL_SPLIT,
@@ -104,14 +109,31 @@ public class MainPanel extends JPanel {
         readingArea.setCaretPosition(0);
     }
     
-    private JButton createNewsButton(News news) {
-        JButton button = new JButton(news.getTitle());
-        button.setAlignmentX(Component.LEFT_ALIGNMENT);
-        button.addActionListener(e -> {
-            readingArea.setText(news.getDescription());
-            readingArea.setCaretPosition(0);
-        });
-        return button;
+    private void searchCallback() {
+        
+        this.searchButton.setEnabled(false);
+        
+        new SwingWorker<List<News>, Void>() {
+            @Override
+            protected List<News> doInBackground() throws Exception {
+                return newsService.searchSimilarTitle(searchInput.getText());
+            }
+            @Override
+            protected void done() {
+                searchButton.setEnabled(true);
+                try {
+                    showNews(get());
+                } catch (Exception ex) {
+                    // get() throws an ExecutionException 
+                    // if doInBackground threw an error
+                    JOptionPane.showMessageDialog(MainPanel.this,
+                            "Could not load search results: " + 
+                                    ex.getCause().getMessage(),
+                            "Network Error",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        }.execute();
     }
 
     private void refreshCallback() {
@@ -143,7 +165,7 @@ public class MainPanel extends JPanel {
     private final NewsService newsService;
     private final JPanel newsListPanel = new JPanel();
     private final JEditorPane readingArea = new JEditorPane();
-    private JSplitPane splitPane;
-    private List<News> news;
     private JButton refreshButton;
+    private JButton searchButton;
+    private JTextField searchInput;
 }
