@@ -1,7 +1,4 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+
 package RSS;
 
 import java.net.HttpURLConnection;
@@ -9,6 +6,7 @@ import java.net.URL;
 
 public final class RssConnectionChecker {
     public static boolean hasInternet() {
+        // Try connectiong to Google, if timeout, then no internet
         try {
             URL url = new URL("https://www.google.com");
             
@@ -34,6 +32,8 @@ public final class RssConnectionChecker {
     }
     
     public static int getStatusCode(String urlAddress) {
+        // Gets the HTTP status code (we check if we get 200, otherwise
+        // it is just an error and we don't go into specifications)
         try {
 
             URL url = new URL(urlAddress);

@@ -23,6 +23,7 @@ public class NewsRepository {
     }
 
     private void createSchema() throws SQLException {
+        // If we don't have the News table, then create it
         try (Connection c = DriverManager.getConnection(dbUrl);
              Statement st = c.createStatement()) {
             st.execute("""
@@ -44,6 +45,7 @@ public class NewsRepository {
     }
 
     public void saveAll(List<News> newsList) throws SQLException {
+        // Save a list of news
         String sql = """
             INSERT INTO item (type, title, language, author, publisher, description,
                               source, url, image_path, publish_time, creation_date, update_date)
@@ -81,6 +83,7 @@ public class NewsRepository {
     }
 
     public List<News> findAllNews() throws SQLException {
+        // Get all the news
         String sql = "SELECT * FROM item WHERE type = "
                 + "'NEWS' ORDER BY publish_time DESC";
         List<News> result = new ArrayList<>();
@@ -106,6 +109,7 @@ public class NewsRepository {
     }
     
     public List<News> similarTitle(String title) {
+        // Get's the news which have a title similar to a given string
         String sql = "SELECT * FROM item WHERE title LIKE ?";
         List<News> results = new ArrayList<News>();
         try(Connection con = DriverManager.getConnection(dbUrl);) {
@@ -133,13 +137,19 @@ public class NewsRepository {
         return results;
     }
 
-    private static void setInstant(PreparedStatement ps, int idx, Instant i) throws SQLException {
+    private static void setInstant(PreparedStatement ps, int idx, Instant i)
+            throws SQLException {
+        // If the Instant is null then set the parameter at index idx to SQL
+        // NULL
         if (i == null) ps.setNull(idx, Types.INTEGER);
+        // Otherwise just convert to Long and save the seconds
         else ps.setLong(idx, i.getEpochSecond());
     }
 
-    private static Instant getInstant(ResultSet rs, String col) throws SQLException {
+    private static Instant getInstant(ResultSet rs, String col)
+            throws SQLException {
         long v = rs.getLong(col);
+        // Returns null or the epochs in seconds
         return rs.wasNull() ? null : Instant.ofEpochSecond(v);
     }
     

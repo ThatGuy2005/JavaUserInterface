@@ -15,6 +15,7 @@ import java.util.List;
 
 public class RssReaderJson {
     public static List<RssSource> getSources(String path) {
+        // Note that the json must have a specific format
         try(FileReader reader = new FileReader(path)) {
             RssSourceContainer container = 
                     GSON.fromJson(reader, RssSourceContainer.class);

@@ -26,13 +26,23 @@ public class NewsService implements Servicable {
     }
     @Override
     public List<News> fetchAll(String path) {
+        // The function fetches all the news from the RSS
         List<News> news = new ArrayList<News>();
         List<News> temporalNews = new ArrayList<News>();
         var rssSources = RssReaderJson.getSources(path);
         
+        // Check for internet
         if(!RssCommunicator.hasInternet())
         {
-            return null;
+            // If no internet, then try loading from the database
+            try {
+                return loadStored();
+            } catch (SQLException e) {
+                System.out.println("Could not read stored news: "
+                        + e.getMessage());
+                return null;
+            }
+            
         }
         
         for(RssSource source : rssSources) {
@@ -53,6 +63,7 @@ public class NewsService implements Servicable {
     }
     
     public List<News> loadStored() throws SQLException {
+        // Loads the news from the database
         return repository.findAllNews();
     }
     
@@ -61,8 +72,11 @@ public class NewsService implements Servicable {
     }
     
     public Integer refreshFromRss(String path) throws Exception {
+        // Fetches the news from a given RSS.json
         List<News> fresh = fetchAll(path);    
+        // Saves the news into the database
         repository.saveAll(fresh);
+        // If no new news were loaded this will be zero
         return fresh.size();
     }
     

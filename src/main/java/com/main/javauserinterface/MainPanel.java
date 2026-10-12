@@ -48,11 +48,12 @@ public class MainPanel extends JPanel {
         readingArea.setDocument(doc);
 
         // Set default text
-        readingArea.setText("<html><body><i>Select a news article...</i></body></html>");
+        readingArea.setText
+        ("<html><body><i>Select a news article...</i></body></html>");
 
-        // Top: toolbar
         // Top: toolbar setup
         this.refreshButton = new JButton("Refresh");
+        // When the refreash is pressed, then data should be loaded from the RSS
         refreshButton.addActionListener(e -> refreshCallback());
         this.searchButton = new JButton("Search");
         searchButton.addActionListener(e -> searchCallback());
@@ -97,9 +98,10 @@ public class MainPanel extends JPanel {
         add(upperPanel, BorderLayout.NORTH);
         add(splitPane, BorderLayout.CENTER);
         
-        reloadFromDatabase();     // instant, local
+        // instant, local
+        reloadFromDatabase();
+        // Get the latest news
         refresh();
-        
     }
     
     private void reloadFromDatabase() {
@@ -116,6 +118,7 @@ public class MainPanel extends JPanel {
         
         new SwingWorker<Integer, Void>() {
             @Override protected Integer doInBackground() throws Exception {
+                // load the RSS into the database
                 return newsService.refreshFromRss("RSS.json");
             }
             @Override protected void done() {
