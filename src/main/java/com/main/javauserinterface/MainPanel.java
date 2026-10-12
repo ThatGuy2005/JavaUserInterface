@@ -29,8 +29,26 @@ public class MainPanel extends JPanel {
         // Right: reading area
         readingArea.setContentType("text/html");
         readingArea.setEditable(false);
-        readingArea.setText
-                ("<html><body><i>Select a news article...</i></body></html>");
+
+        // Add 15 pixels of padding around the text
+        readingArea.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+
+        // Apply modern CSS styling
+        javax.swing.text.html.HTMLEditorKit kit = new javax.swing.text.html.HTMLEditorKit();
+        readingArea.setEditorKit(kit);
+        javax.swing.text.html.StyleSheet styleSheet = kit.getStyleSheet();
+
+        // Define your font family, sizes, and colors
+        styleSheet.addRule("body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; font-size: 14px; color: #333333; }");
+        styleSheet.addRule("h1, h2, h3 { color: #2C3E50; margin-top: 5px; }");
+        styleSheet.addRule("p { margin-bottom: 10px; line-height: 1.5; }");
+        styleSheet.addRule("a { color: #2980B9; text-decoration: none; }");
+
+        javax.swing.text.Document doc = kit.createDefaultDocument();
+        readingArea.setDocument(doc);
+
+        // Set default text
+        readingArea.setText("<html><body><i>Select a news article...</i></body></html>");
 
         // Top: toolbar
         this.refreshButton = new JButton("Refresh");
@@ -105,7 +123,12 @@ public class MainPanel extends JPanel {
     }
 
     private void showArticle(News news) {
-        readingArea.setText(news.getDescription());
+        String htmlContent = "<html><body>" + 
+                         "<h2>" + news.getTitle() + "</h2>" + 
+                         news.getDescription() + 
+                         "</body></html>";
+    
+        readingArea.setText(htmlContent);
         readingArea.setCaretPosition(0);
     }
     
