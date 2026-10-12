@@ -51,6 +51,7 @@ public class MainPanel extends JPanel {
         readingArea.setText("<html><body><i>Select a news article...</i></body></html>");
 
         // Top: toolbar
+        // Top: toolbar setup
         this.refreshButton = new JButton("Refresh");
         refreshButton.addActionListener(e -> refreshCallback());
         this.searchButton = new JButton("Search");
@@ -58,10 +59,24 @@ public class MainPanel extends JPanel {
         this.searchInput = new JTextField(50);
         searchInput.addActionListener(e -> searchCallback());
         
-        JPanel upperPanel = new JPanel(new FlowLayout());
-        upperPanel.add(this.refreshButton);
-        upperPanel.add(this.searchButton);
-        upperPanel.add(this.searchInput);
+        // 1. Initialize the loading label and hide it
+        this.loadingLabel = new JLabel("Loading...");
+        this.loadingLabel.setForeground(java.awt.Color.GRAY);
+        this.loadingLabel.setVisible(false);
+
+        // 2. Use BorderLayout to push the label to the right
+        JPanel upperPanel = new JPanel(new BorderLayout());
+        
+        JPanel leftControls = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        leftControls.add(this.refreshButton);
+        leftControls.add(this.searchButton);
+        leftControls.add(this.searchInput);
+        
+        JPanel rightControls = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        rightControls.add(this.loadingLabel);
+
+        upperPanel.add(leftControls, BorderLayout.WEST);
+        upperPanel.add(rightControls, BorderLayout.EAST);
 
         JSplitPane splitPane = new JSplitPane(
         JSplitPane.HORIZONTAL_SPLIT,
@@ -97,14 +112,18 @@ public class MainPanel extends JPanel {
 
     private void refresh() {
         refreshButton.setEnabled(false);
+        loadingLabel.setVisible(true); // <-- Show loading
+        
         new SwingWorker<Integer, Void>() {
             @Override protected Integer doInBackground() throws Exception {
                 return newsService.refreshFromRss("RSS.json");
             }
             @Override protected void done() {
                 refreshButton.setEnabled(true);
+                loadingLabel.setVisible(false); // <-- Hide loading
+                
                 try {
-                    get();                                 // rethrows any exception from the background
+                    get();                                 
                     reloadFromDatabase();
                 } catch (Exception ex) {
                     System.out.println("Could not refresh: " + ex.getCause().getMessage());
@@ -158,25 +177,24 @@ public class MainPanel extends JPanel {
             }
         }.execute();
     }
-
     private void refreshCallback() {
-        refreshButton.setEnabled(false); // Prevent spam-clicking while loading
+        refreshButton.setEnabled(false); 
+        loadingLabel.setVisible(true); // <-- Show loading
 
         new SwingWorker<List<News>, Void>() {
             @Override
             protected List<News> doInBackground() throws Exception {
-                // Heavy network lifting happens here, safely in the background
                 return newsService.fetchAll("RSS.json");
             }
 
             @Override
             protected void done() {
-                refreshButton.setEnabled(true); // Re-enable the button
+                refreshButton.setEnabled(true); 
+                loadingLabel.setVisible(false); // <-- Hide loading
+                
                 try {
-                    // get() retrieves the return value from doInBackground()
                     showNews(get()); 
                 } catch (Exception ex) {
-                    // get() throws an ExecutionException if doInBackground threw an error
                     JOptionPane.showMessageDialog(MainPanel.this,
                             "Could not refresh news: " + ex.getCause().getMessage(),
                             "Network Error",
@@ -185,10 +203,12 @@ public class MainPanel extends JPanel {
             }
         }.execute();
     }
+    
     private final NewsService newsService;
     private final JPanel newsListPanel = new JPanel();
     private final JEditorPane readingArea = new JEditorPane();
     private JButton refreshButton;
     private JButton searchButton;
     private JTextField searchInput;
+    private JLabel loadingLabel;
 }
