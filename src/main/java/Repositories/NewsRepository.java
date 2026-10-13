@@ -27,132 +27,187 @@ public class NewsRepository {
         try (Connection c = DriverManager.getConnection(dbUrl);
              Statement st = c.createStatement()) {
             st.execute("""
-                CREATE TABLE IF NOT EXISTS item (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    type TEXT NOT NULL CHECK (type IN ('NEWS','EVENT')),
-                    title TEXT NOT NULL CHECK (length(trim(title)) > 0),
-                    language TEXT NOT NULL CHECK (length(language) = 2),
-                    author TEXT, publisher TEXT, description TEXT, source TEXT,
-                    url TEXT UNIQUE, image_path TEXT,
-                    publish_time INTEGER, creation_date INTEGER, update_date INTEGER,
-                    event_date INTEGER, event_location TEXT,
-                    fetched_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
-                    CHECK ((type='EVENT' AND event_date IS NOT NULL)
-                        OR (type='NEWS' AND event_date IS NULL AND event_location IS NULL))
+                CREATE TABLE IF NOT EXISTS news (
+                    title TEXT NOT NULL,
+                    description TEXT,
+                    source TEXT NOT NULL,
+                    author TEXT,
+                    publisher TEXT,
+                    publish_date TIMESTAMP,
+                    url TEXT NOT NULL,
+                    creation_date TIMESTAMP NOT NULL,
+                    last_modified_date TIMESTAMP NOT NULL,
+                    language TEXT NOT NULL,
+                    cover_image TEXT,
+                    PRIMARY KEY (source, url)
                 )""");
-            st.execute("CREATE INDEX IF NOT EXISTS idx_item_publish_time ON item (publish_time DESC)");
         }
     }
 
-    public void saveAll(List<News> newsList) throws SQLException {
-        // Save a list of news
-        String sql = """
-            INSERT INTO item (type, title, language, author, publisher, description,
-                              source, url, image_path, publish_time, creation_date, update_date)
-            VALUES ('NEWS', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT(url) DO UPDATE SET
-                title = excluded.title,
-                description = excluded.description,
-                update_date = excluded.update_date,
-                image_path = excluded.image_path,
-                fetched_at = strftime('%s','now')
-            """;
+    // ---------- Create ----------
+
+    public void insertNews(News news) throws SQLException {
+        // Fails with an SQLException if (source, url) already exists
+        try (Connection c = DriverManager.getConnection(dbUrl);
+             PreparedStatement ps = c.prepareStatement(
+                     "INSERT INTO news (" + COLUMNS + ") VALUES (?,?,?,?,?,?,?,?,?,?,?)")) {
+            bind(ps, news);
+            ps.executeUpdate();
+        }
+    }
+
+    public int insertNewNews(List<News> newsList) throws SQLException {
+        // Saves only the news that are not in the database yet and
+        // returns how many were really added
+        String sql = "INSERT OR IGNORE INTO news (" + COLUMNS
+                + ") VALUES (?,?,?,?,?,?,?,?,?,?,?)";
+        int added = 0;
         try (Connection c = DriverManager.getConnection(dbUrl)) {
             c.setAutoCommit(false);                      // one transaction = much faster
             try (PreparedStatement ps = c.prepareStatement(sql)) {
                 for (News n : newsList) {
-                    ps.setString(1, n.getTitle());
-                    ps.setString(2, n.getLanguage());
-                    ps.setString(3, n.getAuthor());
-                    ps.setString(4, n.getPublisher());
-                    ps.setString(5, n.getDescription());
-                    ps.setString(6, n.getSource());
-                    ps.setString(7, n.getUrl());
-                    ps.setString(8, n.getImagePath());
-                    setInstant(ps, 9,n.getPublishTime());
-                    setInstant(ps, 10, n.getCreationDate());
-                    setInstant(ps, 11, n.getUpdateDate());
-                    ps.addBatch();
+                    bind(ps, n);
+                    added += ps.executeUpdate();
                 }
-                ps.executeBatch();
                 c.commit();
             } catch (SQLException e) {
                 c.rollback();
                 throw e;
             }
         }
+        return added;
+    }
+
+    // ---------- Read ----------
+
+    public News getNews(String source, String url) throws SQLException {
+        String sql = "SELECT * FROM news WHERE source = ? AND url = ?";
+        try (Connection c = DriverManager.getConnection(dbUrl);
+             PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setString(1, source);
+            ps.setString(2, url);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? map(rs) : null;
+            }
+        }
     }
 
     public List<News> findAllNews() throws SQLException {
-        // Get all the news
-        String sql = "SELECT * FROM item WHERE type = "
-                + "'NEWS' ORDER BY publish_time DESC";
+        // Get all the news, the newest first
+        String sql = "SELECT * FROM news ORDER BY publish_date DESC";
         List<News> result = new ArrayList<>();
         try (Connection c = DriverManager.getConnection(dbUrl);
              Statement st = c.createStatement();
              ResultSet rs = st.executeQuery(sql)) {
             while (rs.next()) {
-                result.add(new News(
-                        rs.getString("title"),
-                        rs.getString("author"),
-                        rs.getString("publisher"),
-                        rs.getString("description"),
-                        getInstant(rs, "publish_time"),
-                        rs.getString("source"),
-                        rs.getString("url"),
-                        getInstant(rs, "creation_date"),
-                        getInstant(rs, "update_date"),
-                        rs.getString("language"),
-                        rs.getString("image_path")));
+                result.add(map(rs));
             }
         }
         return result;
     }
-    
-    public List<News> similarTitle(String title) {
-        // Get's the news which have a title similar to a given string
-        String sql = "SELECT * FROM item WHERE title LIKE ?";
-        List<News> results = new ArrayList<News>();
-        try(Connection con = DriverManager.getConnection(dbUrl);) {
-            PreparedStatement stmt = con.prepareStatement(sql);
-            stmt.setString(1, "%" + title + "%");
-            ResultSet rs = stmt.executeQuery();
-            while(rs.next()) {
-                results.add(new News(
-                        rs.getString("title"),
-                        rs.getString("author"),
-                        rs.getString("publisher"),
-                        rs.getString("description"),
-                        getInstant(rs, "publish_time"),
-                        rs.getString("source"),
-                        rs.getString("url"),
-                        getInstant(rs, "creation_date"),
-                        getInstant(rs, "update_date"),
-                        rs.getString("language"),
-                        rs.getString("image_path")));
+
+    public List<News> search(String text) throws SQLException {
+        // News whose title or description contain the text. The escape
+        // makes a typed % or _ be searched as a normal character
+        String escaped = text.replace("\\", "\\\\")
+                .replace("%", "\\%").replace("_", "\\_");
+        String sql = "SELECT * FROM news WHERE title LIKE ? ESCAPE '\\' "
+                + "OR description LIKE ? ESCAPE '\\' ORDER BY publish_date DESC";
+        List<News> results = new ArrayList<>();
+        try (Connection c = DriverManager.getConnection(dbUrl);
+             PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setString(1, "%" + escaped + "%");
+            ps.setString(2, "%" + escaped + "%");
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    results.add(map(rs));
+                }
             }
-        } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return results;
         }
         return results;
     }
 
-    private static void setInstant(PreparedStatement ps, int idx, Instant i)
+    // ---------- Update ----------
+
+    public boolean updateNews(String oldSource, String oldUrl, News news)
             throws SQLException {
-        // If the Instant is null then set the parameter at index idx to SQL
-        // NULL
-        if (i == null) ps.setNull(idx, Types.INTEGER);
-        // Otherwise just convert to Long and save the seconds
-        else ps.setLong(idx, i.getEpochSecond());
+        // The key attributes can be edited too, so the old key is given
+        // separately from the new values
+        String sql = "UPDATE news SET title=?, description=?, source=?, "
+                + "author=?, publisher=?, publish_date=?, url=?, "
+                + "last_modified_date=?, language=?, cover_image=? "
+                + "WHERE source=? AND url=?";
+        try (Connection c = DriverManager.getConnection(dbUrl);
+             PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setString(1, news.getTitle());
+            ps.setString(2, news.getDescription());
+            ps.setString(3, news.getSource());
+            ps.setString(4, news.getAuthor());
+            ps.setString(5, news.getPublisher());
+            ps.setTimestamp(6, news.getPublishDate());
+            ps.setString(7, news.getUrl());
+            ps.setTimestamp(8, new Timestamp(System.currentTimeMillis()));
+            ps.setString(9, news.getLanguage());
+            ps.setString(10, news.getImagePath());
+            ps.setString(11, oldSource);
+            ps.setString(12, oldUrl);
+            return ps.executeUpdate() > 0;
+        }
     }
 
-    private static Instant getInstant(ResultSet rs, String col)
-            throws SQLException {
-        long v = rs.getLong(col);
-        // Returns null or the epochs in seconds
-        return rs.wasNull() ? null : Instant.ofEpochSecond(v);
+    // ---------- Delete ----------
+
+    public boolean deleteNews(String source, String url) throws SQLException {
+        try (Connection c = DriverManager.getConnection(dbUrl);
+             PreparedStatement ps = c.prepareStatement(
+                     "DELETE FROM news WHERE source = ? AND url = ?")) {
+            ps.setString(1, source);
+            ps.setString(2, url);
+            return ps.executeUpdate() > 0;
+        }
     }
+
+    public void clearAll() throws SQLException {
+        try (Connection c = DriverManager.getConnection(dbUrl);
+             Statement st = c.createStatement()) {
+            st.executeUpdate("DELETE FROM news");
+        }
+    }
+
+    // ---------- Helpers ----------
+
+    private static void bind(PreparedStatement ps, News n) throws SQLException {
+        ps.setString(1, n.getTitle());
+        ps.setString(2, n.getDescription());
+        ps.setString(3, n.getSource());
+        ps.setString(4, n.getAuthor());
+        ps.setString(5, n.getPublisher());
+        ps.setTimestamp(6, n.getPublishDate());
+        ps.setString(7, n.getUrl());
+        ps.setTimestamp(8, n.getCreationDate());
+        ps.setTimestamp(9, n.getLastModifiedDate());
+        ps.setString(10, n.getLanguage());
+        ps.setString(11, n.getImagePath());
+    }
+
+    private static News map(ResultSet rs) throws SQLException {
+        return new News(
+                rs.getString("title"),
+                rs.getString("author"),
+                rs.getString("publisher"),
+                rs.getString("description"),
+                rs.getTimestamp("publish_date"),
+                rs.getString("source"),
+                rs.getString("url"),
+                rs.getTimestamp("creation_date"),
+                rs.getTimestamp("last_modified_date"),
+                rs.getString("language"),
+                rs.getString("cover_image"));
+    }
+
+    private static final String COLUMNS = "title, description, source, author, "
+            + "publisher, publish_date, url, creation_date, "
+            + "last_modified_date, language, cover_image";
     
     private final String dbUrl;
 }

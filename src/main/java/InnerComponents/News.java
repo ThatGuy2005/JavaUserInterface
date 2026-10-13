@@ -1,6 +1,7 @@
 
 package InnerComponents;
 
+import java.sql.Timestamp;
 import java.time.Instant;
 
 // Note that we make a Instant of SECONDS!!!!!!
@@ -11,8 +12,8 @@ import java.time.Instant;
 
 public class News extends ComponentItem{
     public News(String title, String author, String publisher,
-            String description, Instant publishTime, String source, String url,
-            Instant creationDate, Instant updateDate, String language,
+            String description, Timestamp publishTime, String source, String url,
+            Timestamp creationDate, Timestamp updateDate, String language,
             String imagePath) {
         super(title,language);
         this.author = author;
@@ -23,12 +24,8 @@ public class News extends ComponentItem{
         this.url = url;
         this.creationDate = creationDate;
         this.updateDate = updateDate;
-        if(imagePath == null) {
-            imagePath = "C:\\Users\\Csongor\\Documents\\NetBeansProjects"
-                    + "\\JavaUserInterface\\defaultNotLoad.png";
-        } else {
-            this.imagePath = imagePath;
-        }
+        this.imagePath = (imagePath == null || imagePath.isBlank())
+                ? DEFAULT_COVER : imagePath;
     }
     public String getDescription() {
         return this.description;
@@ -40,13 +37,13 @@ public class News extends ComponentItem{
     public String getPublisher() {
         return this.publisher;
     }
-    public Instant getPublishTime() {
+    public Timestamp getPublishTime() {
         return this.publishTime;
     }
-    public Instant getCreationDate() {
+    public Timestamp getCreationDate() {
         return this.creationDate;
     }
-    public Instant getUpdateDate() {
+    public Timestamp getUpdateDate() {
         return this.updateDate;
     }
     public String getSource() {
@@ -59,13 +56,15 @@ public class News extends ComponentItem{
     public String getImagePath() {
         return this.imagePath;
     }
+    public static final String DEFAULT_COVER = "res/images/default.jpg";
+    
     private String author;
     private String publisher;
     private String description;
-    private Instant publishTime;
+    private Timestamp publishTime;
     private String source;
     private String url;
-    private Instant creationDate;
-    private Instant updateDate;
+    private Timestamp creationDate;
+    private Timestamp updateDate;
     private String imagePath;
 }

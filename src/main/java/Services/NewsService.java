@@ -25,59 +25,73 @@ public class NewsService implements Servicable {
         this.repository = repo;
     }
     @Override
-    public List<News> fetchAll(String path) {
-        // The function fetches all the news from the RSS
-        List<News> news = new ArrayList<News>();
-        List<News> temporalNews = new ArrayList<News>();
-        var rssSources = RssReaderJson.getSources(path);
+    public RefreshResult refresh(String path) throws IOException {
+        // Downloads every RSS from the json and saves only the new news.
+        // A source that fails does not stop the others, it is reported
+        List<String> errors = new ArrayList<>();
+        int added = 0;
         
-        // Check for internet
-        if(!RssCommunicator.hasInternet())
-        {
-            // If no internet, then try loading from the database
+        for(RssSource source : RssReaderJson.getSources(path)) {
             try {
-                return loadStored();
+                List<News> fresh = new ArrayList<>();
+                for (News n : RssCommunicator.parseRSS(source,
+                        new NewsRSSParser())) {
+                    if (repository.getNews(n.getSource(), n.getUrl()) == null) {
+                        fresh.add(n);
+                    }
+                }
+                // Only the new news need a cover image download
+                List<News> withCover = new ArrayList<>();
+                fresh.parallelStream().map(n -> new News(n.getTitle(),
+                        n.getAuthor(), n.getPublisher(), n.getDescription(),
+                        n.getPublishDate(), n.getSource(), n.getUrl(),
+                        n.getCreationDate(), n.getLastModifiedDate(),
+                        n.getLanguage(), toLocalCover(n.getImagePath())))
+                        .forEachOrdered(withCover::add);
+                added += repository.insertNewNews(withCover);
             } catch (SQLException e) {
-                System.out.println("Could not read stored news: "
+                errors.add(source.getName() + ": database error: "
                         + e.getMessage());
-                return null;
-            }
-            
-        }
-        
-        for(RssSource source : rssSources) {
-            String url = source.getURL();
-            int statusCode = RssCommunicator.getStatusCode(url);
-            if( statusCode !=
-                    RssConnectionChecker.ACCEPT_REQUEST_CODE) {
-                continue;
-            }
-            temporalNews = new NewsRSSParser().parseRSS(url);
-            // Create the buttons based on the news
-            // The next step is to insert the news into the database
-            for(News tNews : temporalNews) {
-                news.add(tNews);
+            } catch (Exception e) {
+                errors.add(source.getName() + ": "
+                        + RssConnectionChecker.explain(e));
             }
         }
-        return news;
+        return new RefreshResult(added, errors);
     }
     
+    private static String toLocalCover(String imagePath) {
+        // The parser leaves the remote url of the image here
+        if (imagePath != null && imagePath.startsWith("http")) {
+            return ImageCache.download(imagePath);
+        }
+        return imagePath;
+    }
+    
+    @Override
     public List<News> loadStored() throws SQLException {
         // Loads the news from the database
         return repository.findAllNews();
     }
     
-    public List<News> searchSimilarTitle(String title) {
-        return repository.similarTitle(title);
+    public List<News> search(String text) throws SQLException {
+        return repository.search(text);
     }
     
-    public Integer refreshFromRss(String path) throws Exception {
-        // Fetches the news from a given RSS.json
-        List<News> fresh = fetchAll(path);    
-        // Saves the news into the database
-        repository.saveAll(fresh);
-        // If no new news were loaded this will be zero
-        return fresh.size();
+    public void add(News news) throws SQLException {
+        repository.insertNews(news);
+    }
+    
+    public void update(News old, News edited) throws SQLException {
+        repository.updateNews(old.getSource(), old.getUrl(), edited);
+    }
+    
+    public void delete(News news) throws SQLException {
+        repository.deleteNews(news.getSource(), news.getUrl());
+    }
+    
+    public void clearAll() throws SQLException {
+        repository.clearAll();
     }
     
     private final NewsRepository repository;
