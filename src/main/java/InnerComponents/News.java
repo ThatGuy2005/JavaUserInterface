@@ -12,18 +12,18 @@ import java.time.Instant;
 
 public class News extends ComponentItem{
     public News(String title, String author, String publisher,
-            String description, Timestamp publishTime, String source, String url,
-            Timestamp creationDate, Timestamp updateDate, String language,
+            String description, Timestamp publishDate, String source, String url,
+            Timestamp creationDate, Timestamp lastModifiedDate, String language,
             String imagePath) {
         super(title,language);
         this.author = author;
         this.publisher = publisher;
         this.description = description;
-        this.publishTime = publishTime;
+        this.publishTime = publishDate;
         this.source = source;
         this.url = url;
         this.creationDate = creationDate;
-        this.updateDate = updateDate;
+        this.updateDate = lastModifiedDate;
         this.imagePath = (imagePath == null || imagePath.isBlank())
                 ? DEFAULT_COVER : imagePath;
     }

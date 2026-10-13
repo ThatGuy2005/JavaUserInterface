@@ -2,6 +2,7 @@
 package Services;
 
 import InnerComponents.News;
+import RSS.ImageCache;
 import RSS.NewsRSSParser;
 import RSS.RssCommunicator;
 import RSS.RssConnectionChecker;
@@ -45,8 +46,8 @@ public class NewsService implements Servicable {
                 List<News> withCover = new ArrayList<>();
                 fresh.parallelStream().map(n -> new News(n.getTitle(),
                         n.getAuthor(), n.getPublisher(), n.getDescription(),
-                        n.getPublishDate(), n.getSource(), n.getUrl(),
-                        n.getCreationDate(), n.getLastModifiedDate(),
+                        n.getPublishTime(), n.getSource(), n.getUrl(),
+                        n.getCreationDate(), n.getUpdateDate(),
                         n.getLanguage(), toLocalCover(n.getImagePath())))
                         .forEachOrdered(withCover::add);
                 added += repository.insertNewNews(withCover);
