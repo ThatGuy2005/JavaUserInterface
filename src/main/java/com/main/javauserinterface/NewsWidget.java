@@ -20,6 +20,7 @@ public class NewsWidget extends JPanel {
     
     private final News news;
     private boolean selected = false;
+    private boolean viewed = false;
     private boolean hovered = false;
 
     public NewsWidget(News news, Consumer<News> onClick) {
@@ -60,8 +61,19 @@ public class NewsWidget extends JPanel {
         updateBackground();
     }
     
+    public void setViewed(boolean viewed) {
+        this.viewed = viewed;
+        updateBackground();
+    }
+    
     private void updateBackground() {
-        setBackground(selected ? SELECTED : hovered ? HOVER : NORMAL);
+        if (selected) {
+            setBackground(hovered ? SELECTED_HOVER : SELECTED);
+        } else if (viewed) {
+            setBackground(hovered ? VIEWED_HOVER : VIEWED);
+        } else {
+            setBackground(hovered ? HOVER : NORMAL);
+        }
     }
 
     // Keeps BoxLayout from stretching the widget vertically
@@ -81,5 +93,8 @@ public class NewsWidget extends JPanel {
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
     private static final Color NORMAL = UIManager.getColor("Panel.background");
     private static final Color HOVER = new Color(225, 235, 250);
-    private static final Color SELECTED = new Color(200, 220, 245);
+    private static final Color SELECTED = new Color(165, 195, 235);
+    private static final Color SELECTED_HOVER = new Color(140, 175, 225);
+    private static final Color VIEWED = new Color(214, 220, 230);
+    private static final Color VIEWED_HOVER = new Color(198, 208, 224);
 }

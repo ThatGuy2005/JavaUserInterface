@@ -185,6 +185,7 @@ public class MainPanel extends JPanel {
         boolean selectionStillShown = false;
         for (News n : news) {
             NewsWidget widget = new NewsWidget(n, this::select);
+            widget.setViewed(viewedNews.contains(key(n)));   // <-- add this line
             if (isSelected(n)) {
                 widget.setSelected(true);
                 selectionStillShown = true;
@@ -193,7 +194,7 @@ public class MainPanel extends JPanel {
         }
         newsListPanel.revalidate();
         newsListPanel.repaint();
-        
+
         if (!selectionStillShown) {
             selectedNews = null;
             showWelcome();
@@ -209,11 +210,13 @@ public class MainPanel extends JPanel {
     
     private void select(News news) {
         selectedNews = news;
+        viewedNews.add(key(news));
         for (java.awt.Component c : newsListPanel.getComponents()) {
             if (c instanceof NewsWidget w) {
-                w.setSelected(isSelected(w.getNews()));
-            }
+            w.setSelected(isSelected(w.getNews()));
+            w.setViewed(viewedNews.contains(key(w.getNews())));
         }
+        }   
         showArticle(news);
         updateButtons();
     }
@@ -473,6 +476,10 @@ public class MainPanel extends JPanel {
                 + RssConnectionChecker.explain(e), "Error",
                 JOptionPane.ERROR_MESSAGE);
     }
+    private static String key(News n) {
+        return n.getSource() + "\n" + n.getUrl();
+    }
+    
     
     private static final String RSS_PATH = "res/rss.json";
     private static final String LOADING_GIF = "res/images/loading.gif";
@@ -496,4 +503,7 @@ public class MainPanel extends JPanel {
     private News selectedNews;
     private int shownCount;
     private int searchId;
+    private final java.util.Set<String> viewedNews = new java.util.HashSet<>();
+
+    
 }
