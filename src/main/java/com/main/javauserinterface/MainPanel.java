@@ -1,18 +1,11 @@
 package com.main.javauserinterface;
 
 import InnerComponents.News;
-import RSS.NewsRSSParser;
-import RSS.ParsableRSS;
-import RSS.RssCommunicator;
-import RSS.RssConnectionChecker;
 import Repositories.NewsRepository;
 import Services.NewsService;
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.FlowLayout;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.ArrayList;
 import java.util.List;
 import javax.swing.*;
 
