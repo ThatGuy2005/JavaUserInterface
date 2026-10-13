@@ -54,6 +54,7 @@ public class NewsRepository {
                 title = excluded.title,
                 description = excluded.description,
                 update_date = excluded.update_date,
+                image_path = excluded.image_path,
                 fetched_at = strftime('%s','now')
             """;
         try (Connection c = DriverManager.getConnection(dbUrl)) {

@@ -127,28 +127,33 @@ public class MainPanel extends JPanel {
         String imagePath = news.getImagePath();
         String imageSrc = "";
         
-        // 1. Check if the path exists and convert it to a valid HTML source
         if (imagePath != null && !imagePath.trim().isEmpty()) {
-            // Converts a raw path to a file:/// URI (safely handles spaces in folder names)
-            imageSrc = new java.io.File(imagePath).toURI().toString();
-        } else {
-            // 2. Fallback to a default image in your resources
-            java.net.URL defaultImgUrl = getClass().getResource("/default-cover.png");
-            if (defaultImgUrl != null) {
-                imageSrc = defaultImgUrl.toString();
+            if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+                // It is a web URL from the RSS feed, use it exactly as is
+                imageSrc = imagePath;
+            } else {
+                // It is a local file (like your welcome.png), safely convert it
+                imageSrc = new java.io.File(imagePath).toURI().toString();
             }
+        } 
+        
+        String finalDescription = news.getDescription();
+        if (finalDescription == null) {
+            finalDescription = "";
+        } else if (!imageSrc.isEmpty()) {
+            // ONLY remove embedded images IF we are showing our own cover image
+            finalDescription = finalDescription.replaceAll("(?i)<img[^>]*>", "");
         }
-
-        // 3. Build the HTML
+        
+        // Build the HTML
         String htmlContent = "<html><body>" + 
                              "<h2>" + news.getTitle() + "</h2>";
                              
-        // Only insert the image tag if we successfully found an image source
         if (!imageSrc.isEmpty()) {
             htmlContent += "<img src='" + imageSrc + "' width='400' /><br/>";
         }
                              
-        htmlContent += news.getDescription() + 
+        htmlContent += finalDescription + 
                        "</body></html>";
  
         readingArea.setText(htmlContent);
@@ -188,6 +193,7 @@ public class MainPanel extends JPanel {
         new SwingWorker<List<News>, Void>() {
             @Override
             protected List<News> doInBackground() throws Exception {
+                newsService.refreshFromRss("RSS.json");
                 return newsService.fetchAll("RSS.json");
             }
 

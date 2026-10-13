@@ -36,29 +36,51 @@ public class NewsRSSParser implements ParsableRSS {
             // Find all <item> elements
             NodeList items = document.getElementsByTagName("item");
 
-            for (int i = 0;i < items.getLength();i++) {
-                Element item = (Element)items.item(i);
+            for (int i = 0; i < items.getLength(); i++) {
+                Element item = (Element) items.item(i);
                 
-                // Ask if this is OKAY. Personally I don't think so.
-                // Also add checks for empty strings
                 String title = getText(item, "title");
                 String link = getText(item, "link");
                 String author = getText(item, "author");
                 String publisher = getText(item, "publisher");
                 String description = getText(item, "description");
-                String language = getText(document.getDocumentElement(),
-                        "language");  // 
+                String language = getText(document.getDocumentElement(), "language");  
                 language = language.length() >= 2 ? 
                         language.substring(0, 2).toLowerCase() : "ro";
                 String source = getText(item, "source");
                 
-                // Ask how to process the dates
-                Instant publishTime = parseDateString
-                    ((getText(item, "pubDate")));
-                Instant creationDate = parseDateString
-                    ((getText(item, "creationDate")));
-                Instant updateDate = parseDateString
-                    ((getText(item, "updateDate")));
+                Instant publishTime = parseDateString((getText(item, "pubDate")));
+                Instant creationDate = parseDateString((getText(item, "creationDate")));
+                Instant updateDate = parseDateString((getText(item, "updateDate")));
+                
+                // --- NEW IMAGE EXTRACTION LOGIC ---
+                String imagePath = null;
+
+                // 1. Check for standard RSS 2.0 <enclosure>
+                NodeList enclosures = item.getElementsByTagName("enclosure");
+                if (enclosures.getLength() > 0) {
+                    Element enclosure = (Element) enclosures.item(0);
+                    String type = enclosure.getAttribute("type");
+                    // Ensure it's actually an image, not a podcast audio file
+                    if (type != null && type.startsWith("image/")) {
+                        imagePath = enclosure.getAttribute("url");
+                    }
+                }
+
+                // 2. Fallback check for <media:content>
+                if (imagePath == null) {
+                    NodeList mediaContents = item.getElementsByTagName("media:content");
+                    if (mediaContents.getLength() > 0) {
+                        Element media = (Element) mediaContents.item(0);
+                        String medium = media.getAttribute("medium");
+                        String type = media.getAttribute("type");
+                        
+                        if ("image".equals(medium) || (type != null && type.startsWith("image/"))) {
+                            imagePath = media.getAttribute("url");
+                        }
+                    }
+                }
+                // ----------------------------------
                 
                 // Create News object
                 News news =
@@ -73,7 +95,7 @@ public class NewsRSSParser implements ParsableRSS {
                                 creationDate,
                                 updateDate,
                                 language,
-                                null
+                                imagePath // Replaced 'null' with the extracted URL
                         );
 
                 // Add object to ArrayList

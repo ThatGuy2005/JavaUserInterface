@@ -23,7 +23,12 @@ public class News extends ComponentItem{
         this.url = url;
         this.creationDate = creationDate;
         this.updateDate = updateDate;
-        this.imagePath = imagePath;
+        if(imagePath == null) {
+            imagePath = "C:\\Users\\Csongor\\Documents\\NetBeansProjects"
+                    + "\\JavaUserInterface\\defaultNotLoad.png";
+        } else {
+            this.imagePath = imagePath;
+        }
     }
     public String getDescription() {
         return this.description;
