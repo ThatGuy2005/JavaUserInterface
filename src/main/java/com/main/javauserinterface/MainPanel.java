@@ -48,8 +48,10 @@ public class MainPanel extends JPanel {
         readingArea.setDocument(doc);
 
         // Set default text
-        readingArea.setText
-        ("<html><body><i>Select a news article...</i></body></html>");
+        String welcomePath = "C:\\Users\\Csongor\\Documents\\NetBeansProjects\\JavaUserInterface\\welcome.png";
+        String welcomeImg = new java.io.File(welcomePath).toURI().toString();
+
+        readingArea.setText("<html><body style='text-align:center;'><img src='" + welcomeImg + "' width='200'/><br/><i>Select a news article...</i></body></html>");
 
         // Top: toolbar setup
         this.refreshButton = new JButton("Refresh");
@@ -122,11 +124,33 @@ public class MainPanel extends JPanel {
     }
 
     private void showArticle(News news) {
+        String imagePath = news.getImagePath();
+        String imageSrc = "";
+        
+        // 1. Check if the path exists and convert it to a valid HTML source
+        if (imagePath != null && !imagePath.trim().isEmpty()) {
+            // Converts a raw path to a file:/// URI (safely handles spaces in folder names)
+            imageSrc = new java.io.File(imagePath).toURI().toString();
+        } else {
+            // 2. Fallback to a default image in your resources
+            java.net.URL defaultImgUrl = getClass().getResource("/default-cover.png");
+            if (defaultImgUrl != null) {
+                imageSrc = defaultImgUrl.toString();
+            }
+        }
+
+        // 3. Build the HTML
         String htmlContent = "<html><body>" + 
-                         "<h2>" + news.getTitle() + "</h2>" + 
-                         news.getDescription() + 
-                         "</body></html>";
-    
+                             "<h2>" + news.getTitle() + "</h2>";
+                             
+        // Only insert the image tag if we successfully found an image source
+        if (!imageSrc.isEmpty()) {
+            htmlContent += "<img src='" + imageSrc + "' width='400' /><br/>";
+        }
+                             
+        htmlContent += news.getDescription() + 
+                       "</body></html>";
+ 
         readingArea.setText(htmlContent);
         readingArea.setCaretPosition(0);
     }
