@@ -3,22 +3,29 @@ package com.main.javauserinterface;
 
 import java.awt.Color;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 public class JavaUserInterface {
 
     public static void main(String[] args) {
-        JFrame frame = new JFrame("NewsViewer");
-        try {
-            MainPanel panel = new MainPanel("MyDatabase.db");
-            panel.setBounds(0, 0, 800, 600);
-            panel.setBackground(Color.red);
-            frame.setBounds(0, 0, 800, 600);
-            frame.add(panel);
-            frame.setVisible(true);
-        } catch (Exception e) {
-            System.err.println(e.getMessage());
-            return;
-        } 
+        SwingUtilities.invokeLater(() -> {
+            JFrame frame = new JFrame("NewsViewer");
+            try {
+                // Stop the program when the window is closed
+                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                frame.add(new MainPanel(System.getProperty("news.db",
+                        "MyDatabase.db")));
+                frame.setSize(1100, 700);
+                frame.setLocationRelativeTo(null);
+                frame.setVisible(true);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null,
+                        "Could not start the program:\n" + e.getMessage(),
+                        "Error", JOptionPane.ERROR_MESSAGE);
+                System.exit(1);
+            }
+        });
         
     }
 }
