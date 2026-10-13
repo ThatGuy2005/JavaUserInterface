@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JButton;
 import Repositories.NewsRepository;
+import java.io.IOException;
 
 public class NewsService implements Servicable {
     public NewsService(NewsRepository repo) {

@@ -11,6 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.sql.Types;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -144,7 +145,7 @@ public class NewsRepository {
             ps.setString(3, news.getSource());
             ps.setString(4, news.getAuthor());
             ps.setString(5, news.getPublisher());
-            ps.setTimestamp(6, news.getPublishDate());
+            ps.setTimestamp(6, news.getPublishTime());
             ps.setString(7, news.getUrl());
             ps.setTimestamp(8, new Timestamp(System.currentTimeMillis()));
             ps.setString(9, news.getLanguage());
@@ -182,10 +183,10 @@ public class NewsRepository {
         ps.setString(3, n.getSource());
         ps.setString(4, n.getAuthor());
         ps.setString(5, n.getPublisher());
-        ps.setTimestamp(6, n.getPublishDate());
+        ps.setTimestamp(6, n.getPublishTime());
         ps.setString(7, n.getUrl());
         ps.setTimestamp(8, n.getCreationDate());
-        ps.setTimestamp(9, n.getLastModifiedDate());
+        ps.setTimestamp(9, n.getUpdateDate());
         ps.setString(10, n.getLanguage());
         ps.setString(11, n.getImagePath());
     }

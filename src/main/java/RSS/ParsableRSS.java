@@ -7,5 +7,7 @@ package RSS;
 import java.util.ArrayList;
 
 public interface ParsableRSS<T> {
-    ArrayList<T> parseRSS(String UrlAddress);
+    // Throws, so the caller can tell the user why a feed failed
+    ArrayList<T> parseRSS(RssSource source) throws Exception;
 }
+
