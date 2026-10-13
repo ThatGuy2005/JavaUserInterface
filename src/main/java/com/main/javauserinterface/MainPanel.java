@@ -101,7 +101,7 @@ public class MainPanel extends JPanel {
         // instant, local
         reloadFromDatabase();
         // Get the latest news
-        refresh();
+        refreshCallback();
     }
     
     private void reloadFromDatabase() {
@@ -112,29 +112,6 @@ public class MainPanel extends JPanel {
         }
     }
 
-    private void refresh() {
-        refreshButton.setEnabled(false);
-        loadingLabel.setVisible(true); // <-- Show loading
-        
-        new SwingWorker<Integer, Void>() {
-            @Override protected Integer doInBackground() throws Exception {
-                // load the RSS into the database
-                return newsService.refreshFromRss("RSS.json");
-            }
-            @Override protected void done() {
-                refreshButton.setEnabled(true);
-                loadingLabel.setVisible(false); // <-- Hide loading
-                
-                try {
-                    get();                                 
-                    reloadFromDatabase();
-                } catch (Exception ex) {
-                    System.out.println("Could not refresh: " + ex.getCause().getMessage());
-                }
-            }
-        }.execute();
-    }
-    
     private void showNews(List<News> news) {
         newsListPanel.removeAll();
         for (News n : news) {
